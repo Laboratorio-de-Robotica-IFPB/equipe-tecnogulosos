@@ -17,77 +17,65 @@ motor_direito = Motor(Port.D)
 motores = DriveBase( Motor(Port.A) , Motor(Port.D) , 69 , 110 )
 
 # Inicialização do ultrasonico
-ultrasonic = UltrasonicSensor(Port.S4)
+ultrasonic = UltrasonicSensor(Port.S3)
 
 # Inicialização dos sensores de cor
-sensor_cor_esquerdo = ColorSensor(Port.S3)
-sensor_cor_direita = ColorSensor(Port.S1)
+sensor_cor_esquerdo = ColorSensor(Port.S1)
+sensor_cor_direito = ColorSensor(Port.S4)
 
 # --- Constantes de Controle e Movimento ---
-# É crucial começar com valores mais baixos para estabilidade
-Kp = 1.0
-VELOCIDADE_BASE = 80
+Kp = 5
+VELOCIDADE_BASE = 300
+
 # --- Constantes para a Lógica de Curva ---
-PRETO = 17
-BRANCO = 73
-LIMITE_BRANCO = BRANCO + PRETO / 2
-VELOCIDADE_GIRO = 60
-LIMITE_ULTRASONIC = 8
+PRETO = 4
+BRANCO = 26
+LIMITE_BRANCO = ( BRANCO + PRETO )/ 2
 
-#if sensor_cor_esquerdo.reflection() <= PRETO:
-motores.straight(200)
-motores.drive( 0 ,-25)
-while True:
-    ev3.speaker.beep(1 , 1)
-'''while sensor_cor_direita.reflection() <= PRETO:
-    motores.stop()
-    break
-
-
-#if sensor_cor_direita.reflection() <= PRETO:
-motores.straight(200)
-motores.drive( 0 , 25 )
-while sensor_cor_esquerdo.reflection() <= PRETO:
-    motores.stop()
-    break
-'''
 # ----- LOOP PRINCIPAL -----
-'''while True:
+while True:
 
-    # 0. Dectectação de objetos 
+    leitura_esquerdo = sensor_cor_esquerdo.reflection()
+    leitura_direito = sensor_cor_direito.reflection()
+
+    print( sensor_cor_esquerdo.reflection()  )
+    print( sensor_cor_direito.reflection() )
+
     if ultrasonic.distance() < 100:
         motores.straight(-20)
         motores.turn(90)
-        motores.straight(100)
+        motores.straight( 300 )
         motores.turn(-90)
-        motores.straight(120)
+        motores.straight(320)
         motores.turn(-90)
         while True:
             motores.drive(50, 0)
-            if sensor_cor_esquerdo.reflection() <= LIMITE_BRANCO or sensor_cor_direita.reflection() <= LIMITE_BRANCO:
+            if sensor_cor_esquerdo.reflection() <= LIMITE_BRANCO or sensor_cor_direito.reflection() <= LIMITE_BRANCO:
+                motores.stop()
                 break
 
+    print("leiteura direito" ,leitura_direito)
+    print("leiteura esquerdo" ,leitura_esquerdo)
 
-    if sensor_cor_esquerdo.reflection() <= PRETO:
-        motores.straight(20)
-            motores.turn(-1)
-            if sensor_cor_direita.reflection() <= PRETO:
-                break
-
-
-    if sensor_cor_direita.reflection() <= PRETO:
-        motores.straight(20)
+    if (sensor_cor_esquerdo.reflection() <= PRETO) and  (sensor_cor_direito.reflection() >= BRANCO):
+        motores.straight( 60 )
+        motores.drive( 0 , -70 )
         while True:
-            motores.turn(1)
-            if sensor_cor_esquerda.reflection() <= PRETO:
+            if  sensor_cor_direito.reflection() <=  ( LIMITE_BRANCO - 1 ): 
+                motores.stop()
                 break
-    
 
-        
+    if (sensor_cor_direito.reflection() <= PRETO ) and (sensor_cor_esquerdo.reflection() >= BRANCO):
+        motores.straight( 60 )
+        motores.drive( 0 , 70 )
+        while True:
+            if  sensor_cor_esquerdo.reflection() <= (  LIMITE_BRANCO - 11 ): 
+                motores.stop()
+                break
 
     #MODO NORMAL / SEGUIR LINHA
     # 2. Calcular o Erro
-    erro = leitura_esquerda - leitura_direita
+    erro = leitura_esquerdo - leitura_direito
         
     # 4. Calcular a Correção Proporcional
     correcao = Kp * erro
@@ -98,7 +86,8 @@ while sensor_cor_esquerdo.reflection() <= PRETO:
         
     motor_esquerdo.run(velocidade_esquerdo)
     motor_direito.run(velocidade_direito)
-    
+
     # Pequena pausa para o processador
     wait(10)
-'''
+
+    # 0. Dectectação de objetos 
