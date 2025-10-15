@@ -25,7 +25,7 @@ sensor_cor_direito = ColorSensor(Port.S4)
 
 # --- Constantes de calibração ---
 PRETO = 5      # mutável
-BRANCO = 60    # mutável
+BRANCO = 60    # mutável <----- acho que 60 é muito o sensor ve entre 4 ~ 47
 LIMITE_BRANCO = (BRANCO + PRETO) / 2
 
 # --- Variável global para o controle derivativo ---
@@ -94,6 +94,7 @@ def desviar_obstaculo():
         motores.drive(100, 0)
         if sensor_cor_esquerdo.reflection() <= LIMITE_BRANCO or sensor_cor_direito.reflection() <= LIMITE_BRANCO:
             motores.stop()
+            motores.turn(90)
             break
 
 # Curva 90° direita
