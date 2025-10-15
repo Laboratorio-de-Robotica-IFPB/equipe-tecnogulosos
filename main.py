@@ -25,8 +25,8 @@ sensor_cor_direito = ColorSensor(Port.S4)
 
 
 # --- Constantes para a Lógica de Curva ---
-PRETO = 4    # mutavel
-BRANCO = 26 # mutavel
+PRETO = 6    # mutavel
+BRANCO = 60 # mutavel
 LIMITE_BRANCO = ( BRANCO + PRETO )/ 2
 
 #############################################################################################################
