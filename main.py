@@ -103,13 +103,15 @@ while True:
     leitura_esquerdo = sensor_cor_esquerdo.reflection()
     leitura_direito = sensor_cor_direito.reflection()
 
-    print( sensor_cor_esquerdo.reflection()  )
+    distancia_obstaculo = ultrasonic.distance()
+
+    print( sensor_cor_esquerdo.reflection() )
     print( sensor_cor_direito.reflection() )
     
     if distancia_obstaculo < 500:
         desviar_obstaculo()
 
-    elif ( sensor_cor_esquerdo <= PRETO ) and  ( leitura_direito >= BRANCO ):
+    elif ( leitura_esquerdo <= PRETO ) and  ( leitura_direito >= BRANCO ):
         curva_direita_acentuada()
 
     elif ( leitura_direito <= PRETO ) and ( leitura_esquerdo >= BRANCO):
