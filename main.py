@@ -23,71 +23,100 @@ ultrasonic = UltrasonicSensor(Port.S3)
 sensor_cor_esquerdo = ColorSensor(Port.S1)
 sensor_cor_direito = ColorSensor(Port.S4)
 
-# --- Constantes de Controle e Movimento ---
-Kp = 5
-VELOCIDADE_BASE = 300
 
 # --- Constantes para a Lógica de Curva ---
-PRETO = 4
-BRANCO = 26
+PRETO = 4    # mutavel
+BRANCO = 26 # mutavel
 LIMITE_BRANCO = ( BRANCO + PRETO )/ 2
+
+#############################################################################################################
+""" Estas funções não estão em outro arquivo pois teria que criar objetos"""
+
+#PID padrão
+def seguir_linha(leitura_esquerdo, leitura_direito):
+    
+    """Calcula e aplica a correção para manter o robô na linha.    """
+
+    # --- Constantes de Controle e Movimento ---
+    Kp = 5 # mutavel
+    VELOCIDADE_BASE = 300 #mutavel
+    #--------------------------------------------
+    
+    erro = leitura_esquerdo - leitura_direito
+    correcao = Kp * erro
+    
+    velocidade_esquerdo = VELOCIDADE_BASE + correcao
+    velocidade_direito = VELOCIDADE_BASE - correcao
+    
+    motor_esquerdo.run(velocidade_esquerdo)
+    motor_direito.run(velocidade_direito)
+
+#Detectação de objetos
+def desviar_obstaculo():
+
+    """Executa uma manobra completa para desviar de um obstáculo e procurar a linha novamente."""
+    motores.stop()
+    motores.straight(-30) # Recua para garantir espaço // mutavel
+    motores.turn(90)
+    motores.straight(200) # mutavel
+    motores.turn(-90)
+    motores.straight(230) #mutavel
+    motores.turn(-90)
+    
+    # Procura a linha novamente
+    while True:
+        motores.drive(100, 0) # Anda para frente devagar // mutavel
+        if sensor_cor_esquerdo.reflection() <= LIMITE_BRANCO or sensor_cor_direito.reflection() <= LIMITE_BRANCO:
+            motores.stop()
+            break
+
+
+"""AS DUAS FUNÇÕES ABAIXO PRECISAM SER REVISADAS"""
+#Curva 90° direita
+def curva_direita_acentuada():
+    
+    """Executa uma curva de 90 graus para a direita ao detectar uma linha preta."""
+    #todos os numeros são mutaveis 
+    motores.straight(60) # Anda para frente para garantir ultrapassagem da curva // mutavel
+    motores.drive(0, -70) # Começa a girar no seu proprio eixo ate achar a linha que estava a direita // mutavel
+    while True:
+        if sensor_cor_direito.reflection() <= LIMITE_BRANCO: 
+            motores.stop()
+            break
+
+#Curva 90° esquerda
+def curva_esquerda_acentuada():
+    
+    """Executa uma curva de 90 graus para a esquerda ao detectar uma linha preta."""
+    motores.straight(60) # Anda para frente para garantir ultrapassagem da curva // mutavel
+    motores.drive(0, 70) # # Começa a girar no seu proprio eixo ate achar a linha que estava a esquerda // mutavel
+    while True:
+        if sensor_cor_esquerdo.reflection() <= LIMITE_BRANCO:
+            motores.stop()
+            break
+#######################################################################################################################
 
 # ----- LOOP PRINCIPAL -----
 while True:
 
+    #leitura dos sensores
     leitura_esquerdo = sensor_cor_esquerdo.reflection()
     leitura_direito = sensor_cor_direito.reflection()
 
     print( sensor_cor_esquerdo.reflection()  )
     print( sensor_cor_direito.reflection() )
+    
+    if distancia_obstaculo < 500:
+        desviar_obstaculo()
 
-    if ultrasonic.distance() < 100:
-        motores.straight(-20)
-        motores.turn(90)
-        motores.straight( 300 )
-        motores.turn(-90)
-        motores.straight(320)
-        motores.turn(-90)
-        while True:
-            motores.drive(50, 0)
-            if sensor_cor_esquerdo.reflection() <= LIMITE_BRANCO or sensor_cor_direito.reflection() <= LIMITE_BRANCO:
-                motores.stop()
-                break
+    elif ( sensor_cor_esquerdo <= PRETO ) and  ( leitura_direito >= BRANCO ):
+        curva_direita_acentuada()
 
-    print("leiteura direito" ,leitura_direito)
-    print("leiteura esquerdo" ,leitura_esquerdo)
+    elif ( leitura_direito <= PRETO ) and ( leitura_esquerdo >= BRANCO):
+        curva_esquerda_acentuada()
 
-    if (sensor_cor_esquerdo.reflection() <= PRETO) and  (sensor_cor_direito.reflection() >= BRANCO):
-        motores.straight( 60 )
-        motores.drive( 0 , -70 )
-        while True:
-            if  sensor_cor_direito.reflection() <=  ( LIMITE_BRANCO - 1 ): 
-                motores.stop()
-                break
-
-    if (sensor_cor_direito.reflection() <= PRETO ) and (sensor_cor_esquerdo.reflection() >= BRANCO):
-        motores.straight( 60 )
-        motores.drive( 0 , 70 )
-        while True:
-            if  sensor_cor_esquerdo.reflection() <= (  LIMITE_BRANCO - 11 ): 
-                motores.stop()
-                break
-
-    #MODO NORMAL / SEGUIR LINHA
-    # 2. Calcular o Erro
-    erro = leitura_esquerdo - leitura_direito
-        
-    # 4. Calcular a Correção Proporcional
-    correcao = Kp * erro
-        
-    # 5. Aplicar a correção aos motores
-    velocidade_esquerdo = VELOCIDADE_BASE + correcao
-    velocidade_direito = VELOCIDADE_BASE - correcao
-        
-    motor_esquerdo.run(velocidade_esquerdo)
-    motor_direito.run(velocidade_direito)
+    else:
+        seguir_linha(leitura_esquerdo, leitura_direito)
 
     # Pequena pausa para o processador
     wait(10)
-
-    # 0. Dectectação de objetos 
