@@ -81,13 +81,21 @@ def seguir_linha(leitura_esquerdo, leitura_direito):
 # Detectação de objetos
 def desviar_obstaculo():
     """Executa uma manobra completa para desviar de um obstáculo e procurar a linha novamente."""
+    
+    # aviso sonoro que entrou no modo desvio
+    ev3.speaker.beep()
+    wait(20)
+    ev3.speaker.beep()
+
     motores.stop()
     motores.straight(-20)
     motores.turn(90)
     motores.straight(200)
     motores.turn(-90)
-    motores.straight(230)
-    motores.turn(-45)
+    motores.straight(400)
+    motores.turn(-90)
+    motores.straight(200)
+    motores.turn(90)
 
 
 # Curva 90° direita
@@ -117,13 +125,13 @@ while True:
 
     erro, correcao, velocidade_esq, velocidade_dir = seguir_linha(leitura_esquerdo, leitura_direito)
     
-    if (leitura_ultrassonico < 50) {
+    if (leitura_ultrassonico < 65):
         desviar_obstaculo()
-    }
 
     # Debug opcional na tela
     ev3.screen.clear()
-    ev3.screen.print("Curva:", round(correcao, 2))
+
+    ev3.screen.print("Dist:", round(leitura_ultrassonico))
     ev3.screen.print("Erro:", round(erro, 2))
     ev3.screen.print("V_esq:", int(velocidade_esq))
     ev3.screen.print("V_dir:", int(velocidade_dir))
