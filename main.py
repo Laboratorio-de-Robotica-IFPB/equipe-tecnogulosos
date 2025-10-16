@@ -121,4 +121,4 @@ while True:
         seguir_linha(leitura_esquerdo, leitura_direito)
 
     # Pequena pausa para o processador
-    wait(10)
+ 

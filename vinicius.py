@@ -41,10 +41,10 @@ def seguir_linha(leitura_esquerdo, leitura_direito):
     global erro_anterior
 
     # Constantes de controle
-    Kp = 3.5
+    Kp = 3.7
     Kd = 1.8
     VELOCIDADE_MAX = 100
-    VELOCIDADE_MIN = 0
+    VELOCIDADE_MIN = 10
 
     # --- GAP DETECTION ---
     if leitura_esquerdo > LIMITE_BRANCO and leitura_direito > LIMITE_BRANCO:
@@ -65,7 +65,7 @@ def seguir_linha(leitura_esquerdo, leitura_direito):
     # --- AJUSTE DINÂMICO DE VELOCIDADE ---
     # Reduz velocidade proporcionalmente ao erro
     erro_abs = abs(erro)
-    fator_reducao = min(erro_abs / 40, 1)  # normaliza o erro (40 pode ajustar)
+    fator_reducao = min(erro_abs / 5, 1)  # normaliza o erro (40 pode ajustar)
     velocidade_linear = VELOCIDADE_MAX - (VELOCIDADE_MAX - VELOCIDADE_MIN) * fator_reducao
 
     # Aplica no drive base
@@ -82,20 +82,13 @@ def seguir_linha(leitura_esquerdo, leitura_direito):
 def desviar_obstaculo():
     """Executa uma manobra completa para desviar de um obstáculo e procurar a linha novamente."""
     motores.stop()
-    motores.straight(-30)
+    motores.straight(-20)
     motores.turn(90)
     motores.straight(200)
     motores.turn(-90)
     motores.straight(230)
-    motores.turn(-90)
-    
-    # Procura a linha novamente
-    while True:
-        motores.drive(100, 0)
-        if sensor_cor_esquerdo.reflection() <= LIMITE_BRANCO or sensor_cor_direito.reflection() <= LIMITE_BRANCO:
-            motores.stop()
-            motores.turn(90)
-            break
+    motores.turn(-45)
+
 
 # Curva 90° direita
 def curva_direita_acentuada():
@@ -118,10 +111,15 @@ def curva_esquerda_acentuada():
 
 # ----- LOOP PRINCIPAL -----
 while True:
+    leitura_ultrassonico = ultrasonic.distance()
     leitura_esquerdo = sensor_cor_esquerdo.reflection()
     leitura_direito = sensor_cor_direito.reflection()
 
     erro, correcao, velocidade_esq, velocidade_dir = seguir_linha(leitura_esquerdo, leitura_direito)
+    
+    if (leitura_ultrassonico < 50) {
+        desviar_obstaculo()
+    }
 
     # Debug opcional na tela
     ev3.screen.clear()
@@ -129,5 +127,6 @@ while True:
     ev3.screen.print("Erro:", round(erro, 2))
     ev3.screen.print("V_esq:", int(velocidade_esq))
     ev3.screen.print("V_dir:", int(velocidade_dir))
+    ev3.screen.print("L_esq:", int(leitura_esquerdo))
     wait(10)
 
